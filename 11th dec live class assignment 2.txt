@@ -1,0 +1,118 @@
+use database Demo_database;
+create or replace table sales_data_final
+(
+order_id varchar(40),
+order_date varchar(15),
+ship_date varchar(15) ,
+ship_mode varchar(100),
+customer_name varchar(100),
+segment varchar(100),
+state varchar(90),
+country varchar(100),
+market varchar(80),
+region varchar(80),
+product_id varchar(190),
+category varchar(170),
+sub_category varchar(100),
+product_name varchar(190),
+sales int,
+quantity int,
+discount float,
+profit float,
+shipping_cost float,
+order_priority varchar(70),
+year varchar(40)
+);
+describe table sales_data_final;
+select * from sales_data_final;
+
+------1 .SET PRIMARY KEY.
+alter table sales_data_final
+add primary key(order_id);
+
+create or replace table sales_data_final_copy as
+select * from sales_data_final;
+
+describe table sales_data_final_copy;
+
+------1.SET PRIMARY KEY ORDER_ID.
+
+alter table sales_data_final_copy
+add primary key(order_id);     
+
+select* from sales_data_final_copy;
+
+----2. CHECK THE ORDER DATE AND SHIP DATE TYPE AND THINK IN WHICH DATA TYPE YOU HAVE TO CHANGE.
+
+
+select to_date(order_date,'yyyy-mm-dd')from sales_data_final;
+select to_date(ship_date,'yyyy-mm-dd')from sales_data_final;
+
+
+
+-----3.EXTRACT THE LAST NUMBER AFTER THE - AND CREATE OTHER COLUMN AND UPDATE IT in order_id
+
+select split_part(order_id,'-',3)from sales_data_final;  
+
+
+
+-----. 4 FLAG ,IF DISCOUNT IS GREATER THEN 0 THEN  YES ELSE FALSE AND PUT IT IN NEW COLUMN FRO EVERY ORDER ID.
+select*,
+    case 
+      when( discount > 0) then 'yes'
+      else 'false'
+      end as discount_type
+from sales_data_final_copy;  
+
+----5.  FIND OUT THE FINAL PROFIT AND PUT IT IN COLUMN FOR EVERY ORDER ID.------ignore this question
+select*,
+
+ case 
+    when (profit-shipping_cost >=0) then profit-shipping_cost
+    when (profit-shipping_cost <0) then profit-shipping_cost 
+    else 'none'
+    end as final_profit
+    from sales_data_final_copy;  
+
+
+
+-----.6  FIND OUT HOW MUCH DAYS TAKEN FOR EACH ORDER TO PROCESS FOR THE SHIPMENT FOR EVERY ORDER ID.
+
+select *,datediff('day',order_date,ship_date) as process_day
+from sales_data_final_copy;
+
+
+------.7 FLAG THE PROCESS DAY AS BY RATING IF IT TAKES LESS OR EQUAL 3  DAYS MAKE 5,LESS OR EQUAL THAN 6 DAYS BUT MORE THAN 3 MAKE 4,LESS THAN 10 BUT MORE THAN 6 MAKE 3,MORE THAN 10 MAKE IT 2 FOR EVERY ORDER ID.
+
+select *,
+   case
+      when(process_day <3 or process_day=3 )  then 'rating 5' 
+      when (process_day <=6 or process_day >3) then 'rating 4'
+      when (process_day <10 or process_day >6) then 'rating 3'
+      when (process_day >10) then 'rating 2'
+else 'rating 0'
+end as Rating_type
+from sales_data_final_copy;
+
+alter table sales_data_final_copy
+drop column process_day ;
+
+
+
+select * from sales_data_final_copy;
+
+
+select *,
+   case
+      when(datediff('day',order_date,ship_date)<3 or datediff('day',order_date,ship_date)=3 )  then 'rating 5' 
+      when (datediff('day',order_date,ship_date)<=6 or datediff('day',order_date,ship_date) >3) then 'rating 4'
+      when (datediff('day',order_date,ship_date)<10 or datediff('day',order_date,ship_date) >6) then 'rating 3'
+      when (datediff('day',order_date,ship_date) >10) then 'rating 2'
+else 'rating 0'
+end as Rating_type
+from sales_data_final_copy;
+
+
+
+
+
